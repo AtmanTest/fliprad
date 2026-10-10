@@ -56,7 +56,7 @@ th:first-child,td:first-child{text-align:left;white-space:normal}th{font-size:12
 </style>
 </head>
 <body>
-<div class="demo" id="demo">Mode DÉMO : annonces synthétiques, aucune source réelle branchée. Importez de vraies annonces dans « Import ».</div>
+<div class="demo" id="demo">Mode DÉMO : annonces synthétiques, aucune source réelle branchée. Importez de vraies annonces dans « Import ». Données stockées dans votre navigateur.</div>
 <header><div class="bar">
   <a class="logo" href="#/">◎ FlipRadar</a>
   <nav id="nav"></nav><span class="sp"></span>
@@ -65,12 +65,13 @@ th:first-child,td:first-child{text-align:left;white-space:normal}th{font-size:12
 <main id="app"></main>
 <div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
+<script src="engine.js"></script>
 <script>
 const $=s=>document.querySelector(s), app=$('#app');
 const eur=n=>n==null?'—':(Math.round(n*100)/100).toLocaleString('fr-FR',{maximumFractionDigits:2})+' €';
 const eur0=n=>n==null?'—':Math.round(n).toLocaleString('fr-FR')+' €';
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const api=async(p,o)=>{const r=await fetch('/api'+p,o&&{method:o.m,headers:{'Content-Type':'application/json'},body:JSON.stringify(o.b)});const j=await r.json();if(!r.ok)throw new Error(j.error);return j};
+const api=async(p,o)=>FlipAPI(p,o);
 const toast=m=>{const t=$('#toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',2400)};
 const NAV=[['#/','Niches'],['#/suivi','Suivi'],['#/calc','Calculateur'],['#/import','Import'],['#/reglages','Réglages']];
 const ICON={lego:'🧱',outils:'🔧','pc-pro':'💻'};
@@ -221,7 +222,8 @@ async function reglages(){
    <div><label>Mode d'achat</label><select id="s_buy_mode"><option value="delivery" ${s.buy_mode==='delivery'?'selected':''}>Livraison</option><option value="hand" ${s.buy_mode==='hand'?'selected':''}>Main propre</option></select></div>
    ${[['travel_cost','Coût déplacement (€)'],['min_margin','Marge nette min. (€)'],['target_roi','ROI cible (0.2 = 20 %)'],['w_speed','Poids vitesse de vente (0–1)'],['w_conf','Poids confiance données (0–1)']].map(([k,l])=>`<div><label>${l}</label><input id="s_${k}" type="number" step="0.05" value="${s[k]}"></div>`).join('')}</div>
    <p class="small mute">Score = 100 × facteur marge × (base + poids vitesse × vitesse + poids confiance × confiance) × (1 − risque). Base = 1 − poids vitesse − poids confiance.</p>
-   <button class="btn pri" onclick="saveS()">Enregistrer</button></div>`;
+   <button class="btn pri" onclick="saveS()">Enregistrer</button></div>
+   <h2>Données</h2><div class="card"><p class="small mute">Tout est stocké dans ce navigateur (aucun serveur). Réinitialiser remet les annonces de DÉMO et efface vos imports et votre suivi.</p><button class="btn" onclick="if(confirm('Tout effacer et remettre la démo ?'))api('/reset',{m:'POST',b:{}}).then(()=>{toast('Réinitialisé');route()})">Réinitialiser</button></div>`;
 }
 async function saveS(){const b={};['buy_mode','travel_cost','min_margin','target_roi','w_speed','w_conf'].forEach(k=>b[k]=$('#s_'+k).value);await api('/settings',{m:'POST',b});toast('Enregistré')}
 
