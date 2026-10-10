@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FlipRadar</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#14181f;--mute:#667085;--line:#e4e7ec;--acc:#e8590c;--acc2:#fff4ec;--ok:#12805c;--okbg:#e6f6ef;--warn:#b25e09;--warnbg:#fff3e0;--bad:#c0262d;--badbg:#fdeaea;--blue:#1c64f2}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1115;--card:#171a21;--ink:#eceff4;--mute:#9aa3b2;--line:#272c36;--acc:#ff8a4c;--acc2:#2a1d14;--ok:#4cd6a0;--okbg:#10291f;--warn:#f0a85a;--warnbg:#2b2113;--bad:#ff7b80;--badbg:#321517;--blue:#7aa7ff}}
+*{box-sizing:border-box}body{margin:0;font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+a{color:inherit}button{font:inherit;cursor:pointer}
+header{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line)}
+.bar{max-width:1100px;margin:auto;padding:10px 16px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.logo{font-weight:800;font-size:18px;color:var(--acc);text-decoration:none}
+nav{display:flex;gap:4px;flex-wrap:wrap}nav a{padding:6px 12px;border-radius:8px;text-decoration:none;color:var(--mute);font-weight:600}
+nav a.on{background:var(--acc2);color:var(--acc)}
+.sp{flex:1}
+main{max-width:1100px;margin:auto;padding:16px}
+.demo{background:var(--warnbg);color:var(--warn);padding:8px 16px;font-size:13px;text-align:center;border-bottom:1px solid var(--line)}
+h1{font-size:22px;margin:4px 0 14px}h2{font-size:17px;margin:22px 0 10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.card.click{cursor:pointer}.card.click:hover{border-color:var(--acc)}
+.mute{color:var(--mute)}.small{font-size:12.5px}
+.pill{display:inline-block;padding:2px 8px;border-radius:99px;font-size:12px;font-weight:600;background:var(--line);color:var(--mute)}
+.pill.ok{background:var(--okbg);color:var(--ok)}.pill.warn{background:var(--warnbg);color:var(--warn)}.pill.bad{background:var(--badbg);color:var(--bad)}
+.tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.tab{padding:7px 14px;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--mute);font-weight:600}
+.tab.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.row{display:grid;grid-template-columns:34px 1fr auto;gap:12px;align-items:center;padding:12px 4px;border-bottom:1px solid var(--line)}
+.row:last-child{border:0}.rank{width:30px;height:30px;border-radius:50%;background:var(--acc2);color:var(--acc);display:grid;place-items:center;font-weight:800}
+.row .t{font-weight:600}.row .meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;align-items:center}
+.net{font-weight:800;font-size:18px;color:var(--ok);text-align:right;white-space:nowrap}.net.neg{color:var(--bad)}
+.score{font-size:12px;color:var(--mute);text-align:right}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:7px 12px;border-radius:8px;font-weight:600}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}.btn.sm{padding:4px 9px;font-size:13px}
+input,select,textarea{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);width:100%}
+label{display:block;font-size:12.5px;color:var(--mute);margin-bottom:3px;font-weight:600}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:12px}
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;align-items:end}.filters>div{width:130px}
+table{width:100%;border-collapse:collapse}th,td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left;white-space:normal}th{font-size:12px;color:var(--mute);font-weight:700}
+.tw{overflow-x:auto}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;z-index:20;overflow:auto;padding:16px}
+.modal.on{display:block}.sheet{background:var(--card);max-width:720px;margin:20px auto;border-radius:14px;padding:18px;position:relative}
+.x{position:absolute;right:12px;top:10px;border:0;background:none;font-size:26px;color:var(--mute)}
+.kv{display:grid;grid-template-columns:1fr auto;gap:4px 12px;margin:8px 0}.kv b{text-align:right}.kv .tot{border-top:1px solid var(--line);padding-top:6px;font-size:16px}
+.risk{padding:7px 10px;border-radius:8px;margin:5px 0;font-size:13.5px}.risk.b{background:var(--badbg);color:var(--bad)}.risk.w{background:var(--warnbg);color:var(--warn)}
+.msg{background:var(--bg);border:1px dashed var(--line);border-radius:8px;padding:10px;font-size:13.5px;white-space:pre-wrap}
+.kan{display:grid;grid-template-columns:repeat(5,minmax(190px,1fr));gap:10px;overflow-x:auto}
+.col{background:var(--bg);border-radius:10px;padding:8px;min-height:120px}.col h3{font-size:13px;margin:4px 4px 8px;color:var(--mute)}
+.deal{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px;margin-bottom:8px;font-size:13.5px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:14px}.kpi b{display:block;font-size:22px}
+.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:99px;display:none;z-index:40}
+@media(max-width:600px){.row{grid-template-columns:30px 1fr}.row .r{grid-column:2}.net,.score{text-align:left}}
+</style>
+</head>
+<body>
+<div class="demo" id="demo">Mode DÉMO : annonces synthétiques, aucune source réelle branchée. Importez de vraies annonces dans « Import ».</div>
+<header><div class="bar">
+  <a class="logo" href="#/">◎ FlipRadar</a>
+  <nav id="nav"></nav><span class="sp"></span>
+  <button class="btn sm" id="scan">↻ Scanner</button>
+</div></header>
+<main id="app"></main>
+<div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+<script>
+const $=s=>document.querySelector(s), app=$('#app');
+const eur=n=>n==null?'—':(Math.round(n*100)/100).toLocaleString('fr-FR',{maximumFractionDigits:2})+' €';
+const eur0=n=>n==null?'—':Math.round(n).toLocaleString('fr-FR')+' €';
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const api=async(p,o)=>{const r=await fetch('/api'+p,o&&{method:o.m,headers:{'Content-Type':'application/json'},body:JSON.stringify(o.b)});const j=await r.json();if(!r.ok)throw new Error(j.error);return j};
+const toast=m=>{const t=$('#toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',2400)};
+const NAV=[['#/','Niches'],['#/suivi','Suivi'],['#/calc','Calculateur'],['#/import','Import'],['#/reglages','Réglages']];
+const ICON={lego:'🧱',outils:'🔧','pc-pro':'💻'};
+const sc=s=>s>=60?'ok':s>=35?'warn':'bad';
+const CONF={haute:'ok',moyenne:'warn',basse:'bad'};
+let niches=[];
+
+function nav(){const h=location.hash||'#/';$('#nav').innerHTML=NAV.map(([a,l])=>`<a href="${a}" class="${h===a||(a==='#/'&&h.startsWith('#/niche'))?'on':''}">${l}</a>`).join('')}
+
+async function route(){
+  nav();const h=(location.hash||'#/').slice(2).split('/');
+  try{
+    if(!h[0])return await home();
+    if(h[0]==='niche')return await niche(h[1],h[2]||'achats');
+    if(h[0]==='suivi')return await suivi();
+    if(h[0]==='calc')return calc();
+    if(h[0]==='import')return await imp();
+    if(h[0]==='reglages')return await reglages();
+  }catch(e){app.innerHTML=`<div class="card">Erreur : ${esc(e.message)}</div>`}
+}
+
+async function home(){
+  niches=await api('/niches');
+  const on=niches.filter(n=>n.enabled), off=niches.filter(n=>!n.enabled);
+  app.innerHTML=`<h1>Niches actives</h1><div class="grid">${on.map(n=>`
+    <div class="card click" onclick="location.hash='#/niche/${n.slug}'">
+      <div style="display:flex;justify-content:space-between;align-items:center"><b>${ICON[n.slug]||''} ${esc(n.name)}</b><span class="pill">${esc(n.category)}</span></div>
+      <div class="small mute" style="margin:6px 0 10px">${esc(n.note)}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="pill ${sc(n.safety)}">Sûreté ${n.safety}</span>
+        ${n.safety_measured!=null?`<span class="pill ${sc(n.safety_measured)}">mesurée ${n.safety_measured}</span>`:''}
+        <span class="pill">${n.active} en ligne</span><span class="pill">${n.sold30} ventes/30j</span><span class="pill ok">${n.deals} deals</span></div>
+      ${n.best?`<div style="margin-top:10px;border-top:1px solid var(--line);padding-top:8px" class="small">Meilleur deal : <b>${esc(n.best.title)}</b><br><span style="color:var(--ok);font-weight:700">+${eur0(n.best.net)} net</span> · score ${n.best.score}</div>`:''}
+    </div>`).join('')}</div>
+  <h2>Niches à risque (désactivées)</h2>
+  <div class="grid">${off.map(n=>`<div class="card" style="opacity:.75"><b>${esc(n.name)}</b> <span class="pill">${esc(n.category)}</span>
+    <div class="small mute" style="margin:6px 0">${esc(n.note)}</div><span class="pill bad">Sûreté ${n.safety}</span></div>`).join('')}</div>`;
+}
+
+async function niche(slug,tab){
+  if(!niches.length)niches=await api('/niches');
+  const n=niches.find(x=>x.slug===slug);if(!n){app.innerHTML='Niche inconnue';return}
+  const tabs=[['achats','Top 10 Achats'],['ventes','Top 10 Ventes'],['reglages','Réglages']];
+  let head=`<h1>${ICON[slug]||''} ${esc(n.name)}</h1><div class="tabs">${tabs.map(([k,l])=>`<a class="tab ${k===tab?'on':''}" href="#/niche/${slug}/${k}" style="text-decoration:none">${l}</a>`).join('')}</div>`;
+  if(tab==='achats'){
+    app.innerHTML=head+`<div class="filters"><div><label>Budget max (€)</label><input id="fmp" type="number"></div><div><label>Marge min (€)</label><input id="fmm" type="number"></div><button class="btn" onclick="loadBuys('${slug}')">Filtrer</button></div><div class="card" id="list">Chargement…</div>`;
+    loadBuys(slug);
+  }else if(tab==='ventes'){
+    const d=await api(`/niche/${slug}/sales`);
+    app.innerHTML=head+`<p class="small mute">Classement basé sur les badges « Vendu » / « Achat en cours » observés. Ne couvre que les annonces avec paiement sécurisé : les ventes en main propre sont invisibles. « Observé » = ventes réelles ; « estimé » = faute de ventes.</p>
+    <div class="card tw"><table><tr><th>Modèle</th><th>Score</th><th>Ventes 30j</th><th>Délai</th><th>Prix vendu (méd.)</th><th>Fourchette</th><th>Achat min. en ligne</th><th>Prix d'achat max conseillé</th><th>Données</th></tr>
+    ${d.items.map((r,i)=>`<tr><td><b>${i+1}. ${esc(r.name)}</b></td><td><span class="pill ${sc(r.score)}">${r.score}</span></td><td>${r.sold30} <span class="mute small">(${r.sold90}/90j)</span></td><td>${r.days_to_sell!=null?r.days_to_sell+' j':'—'}</td><td>${eur0(r.median_sold)}</td><td class="mute">${eur0(r.p25)}–${eur0(r.p75)}</td><td>${eur0(r.ask_p25)} <span class="small mute">(${r.active_n} annonces)</span></td><td><b style="color:var(--ok)">${eur0(r.max_buy)}</b></td><td><span class="pill ${r.basis==='observé'?CONF[r.confidence]:'bad'}">${r.basis} · ${r.confidence}</span></td></tr>`).join('')}</table></div>`;
+  }else{
+    app.innerHTML=head+`<div class="card"><div class="form">
+      ${[['fee_pct','Frais de revente (%)'],['pack_cost','Emballage (€)'],['prep_cost','Remise en état (€)'],['delivery_default','Livraison achat par défaut (€)']].map(([k,l])=>`<div><label>${l}</label><input id="n_${k}" type="number" step="0.5" value="${n[k]??''}"></div>`).join('')}</div>
+      <button class="btn pri" onclick="saveNiche('${slug}')">Enregistrer</button></div>`;
+  }
+}
+async function loadBuys(slug){
+  const mp=$('#fmp')?.value||0,mm=$('#fmm')?.value||0;
+  const d=await api(`/niche/${slug}/buys?max_price=${mp}&min_margin=${mm}`);
+  $('#list').innerHTML=d.items.length?d.items.map((v,i)=>{const a=v.analysis;return `<div class="row">
+    <div class="rank">${i+1}</div>
+    <div><div class="t"><a href="javascript:openL(${v.id})" style="text-decoration:none">${esc(v.title)}</a></div>
+      <div class="meta"><b>${eur0(v.price)}</b><span class="mute small">→ revente ${eur0(a.resale.mid)}</span>
+      <span class="pill ${a.resale.basis==='observé'?CONF[a.confidence]:'bad'}">${a.resale.basis}</span>
+      ${a.days_to_sell!=null?`<span class="pill">~${a.days_to_sell} j</span>`:''}
+      ${a.risks.length?`<span class="pill warn">⚠ ${a.risks.length} risque${a.risks.length>1?'s':''}</span>`:''}
+      <span class="mute small">${esc(v.location)} · ${a.age_days} j</span></div></div>
+    <div class="r"><div class="net">+${eur0(a.net)}</div><div class="score">${Math.round(a.roi*100)} % · score <b>${a.score}</b></div></div></div>`}).join('')
+    :'<span class="mute">Aucune opportunité avec ces filtres.</span>';
+}
+async function saveNiche(slug){
+  const b={};['fee_pct','pack_cost','prep_cost','delivery_default'].forEach(k=>b[k]=$('#n_'+k).value||0);
+  await api('/niche/'+slug,{m:'PATCH',b});niches=[];toast('Enregistré');
+}
+
+function sheetAnalysis(a,extra=''){
+  if(!a.analyzable)return `<p class="risk w">${esc(a.reason)}. Ajoutez le modèle au catalogue (catalog.py) ou importez plus d'annonces.</p>`;
+  const c=a.costs,r=a.resale;
+  return `<div style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0"><span class="pill ${sc(a.score)}">Score ${a.score}/100</span>
+    <span class="pill ${r.basis==='observé'?CONF[a.confidence]:'bad'}">${r.basis} · confiance ${a.confidence}</span><span class="pill">${esc(a.product.name)}</span><span class="pill">${esc(a.condition_label)}</span></div>
+  <div class="kv"><span>Revente estimée</span><b>${eur0(r.mid)} <span class="mute small">(${eur0(r.low)}–${eur0(r.high)})</span></b>
+   <span>− Prix de l'annonce</span><b>${eur(c.price)}</b><span>− Frais acheteur</span><b>${eur(c.buyer_fee)}</b><span>− Livraison / déplacement</span><b>${eur(c.delivery)}</b>
+   <span>− Frais de revente</span><b>${eur(c.resale_fee)}</b><span>− Emballage</span><b>${eur(c.packaging)}</b><span>− Remise en état</span><b>${eur(c.prep)}</b>
+   <span class="tot"><b style="text-align:left">Marge nette</b></span><b class="tot" style="color:${a.net>0?'var(--ok)':'var(--bad)'}">${eur(a.net)} (${Math.round(a.roi*100)} %)</b></div>
+  <p class="small mute">${a.why.map(esc).join('<br>')}</p>
+  ${a.risks.map(x=>`<div class="risk ${x.blocking?'b':'w'}">${x.blocking?'⛔':'⚠'} ${esc(x.label)}</div>`).join('')}
+  <p><b>Prix d'achat max conseillé : ${eur0(a.max_buy)}</b> <span class="mute small">(ROI cible et marge min. des Réglages)</span></p>
+  ${a.message?`<label>Message de négociation (à envoyer vous-même)</label><div class="msg" id="msg">${esc(a.message)}</div><button class="btn sm" onclick="navigator.clipboard.writeText($('#msg').textContent);toast('Copié')">Copier</button>`:''}${extra}`;
+}
+async function openL(id){
+  const v=await api('/listing/'+id),a=v.analysis;
+  $('#sheet').innerHTML=`<button class="x" onclick="closeM()">×</button><h2 style="margin-top:0">${esc(v.title)}</h2>
+   <div class="mute small">${esc(v.location)} · vendeur ${v.seller_rating??'—'}★ (${v.seller_reviews??0} avis) · statut <b>${esc(v.status.replace('_',' '))}</b>${v.demo?' · <span class="pill warn">DÉMO</span>':''}</div>
+   ${sheetAnalysis(a)}
+   ${v.comps&&v.comps.length?`<h2>Ventes comparables observées</h2><div class="tw"><table><tr><th>Prix</th><th>Statut</th><th>Vendu en</th><th>Il y a</th><th>État</th></tr>${v.comps.map(c=>`<tr><td>${eur0(c.price)}</td><td>${c.status==='vendu'?'Vendu':'Achat en cours'}</td><td>${c.days} j</td><td>${c.sold_ago} j</td><td>${esc(c.condition)}</td></tr>`).join('')}</table></div>`:''}
+   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+     ${v.url?`<a class="btn" href="${esc(v.url)}" target="_blank" rel="noopener">Voir l'annonce ↗</a>`:''}
+     <button class="btn pri" onclick="track(${v.id},${JSON.stringify(v.title).replace(/"/g,'&quot;')},${a.net||0},${v.price})">+ Ajouter au suivi</button>
+     <button class="btn" onclick="ignoreL(${v.id})">Ignorer</button></div>`;
+  $('#modal').classList.add('on');
+}
+function closeM(){$('#modal').classList.remove('on')}
+$('#modal').onclick=e=>{if(e.target.id==='modal')closeM()};
+async function track(id,title,net,price){await api('/deals',{m:'POST',b:{listing_id:id,title,est_net:net,buy_price:price}});toast('Ajouté au suivi');closeM()}
+async function ignoreL(id){await api(`/listing/${id}/ignore`,{m:'POST',b:{}});closeM();route()}
+
+const ST={repere:'Repéré',contacte:'Contacté',achete:'Acheté',en_vente:'En vente',vendu:'Vendu'};
+async function suivi(){
+  const d=await api('/deals');
+  app.innerHTML=`<h1>Suivi</h1><div class="kpis"><div class="card kpi">Marge réalisée<b style="color:var(--ok)">${eur0(d.stats.realised)}</b></div>
+  <div class="card kpi">Ventes conclues<b>${d.stats.count_sold}</b></div><div class="card kpi">Capital immobilisé<b>${eur0(d.stats.capital)}</b></div></div>
+  <div class="kan">${d.stages.map(s=>`<div class="col"><h3>${ST[s]} (${d.items.filter(x=>x.stage===s).length})</h3>${d.items.filter(x=>x.stage===s).map(x=>`<div class="deal">
+   <b>${esc(x.title)}</b><div class="small mute">estimé ${eur0(x.est_net)}${x.real_net!=null?` · réel <b style="color:${x.real_net>=0?'var(--ok)':'var(--bad)'}">${eur0(x.real_net)}</b>`:''}</div>
+   <div style="display:flex;gap:4px;margin-top:6px"><input type="number" placeholder="Achat €" value="${x.buy_price??''}" onchange="upd(${x.id},{buy_price:this.value})" style="padding:4px">
+   <input type="number" placeholder="Vente €" value="${x.sell_price??''}" onchange="upd(${x.id},{sell_price:this.value})" style="padding:4px"></div>
+   <select onchange="upd(${x.id},{stage:this.value})" style="margin-top:6px;padding:4px">${d.stages.map(z=>`<option value="${z}" ${z===x.stage?'selected':''}>${ST[z]}</option>`).join('')}</select>
+   <button class="btn sm" style="margin-top:6px" onclick="delDeal(${x.id})">Supprimer</button></div>`).join('')}</div>`).join('')}</div>`;
+}
+async function upd(id,b){await api('/deals/'+id,{m:'PATCH',b});if(b.stage)suivi()}
+async function delDeal(id){await api('/deals/'+id,{m:'DELETE'});suivi()}
+
+function calc(){
+  app.innerHTML=`<h1>Calculateur d'une annonce</h1><div class="card"><div class="form">
+   <div style="grid-column:1/-1"><label>Titre de l'annonce</label><input id="c_t" placeholder="PC portable Lenovo ThinkPad X395 - très bon état"></div>
+   <div><label>Prix (€)</label><input id="c_p" type="number" value="125"></div><div><label>Livraison (€, optionnel)</label><input id="c_d" type="number" placeholder="6.49"></div>
+   <div><label>Avis vendeur (optionnel)</label><input id="c_r" type="number"></div></div>
+   <label>Description (optionnel)</label><textarea id="c_desc" rows="2"></textarea><br><br><button class="btn pri" onclick="doCalc()">Analyser</button></div><div class="card" id="cres" style="margin-top:12px;display:none"></div>`;
+}
+async function doCalc(){
+  try{const d=await api('/analyze',{m:'POST',b:{title:$('#c_t').value,price:$('#c_p').value,delivery_fee:$('#c_d').value,reviews:$('#c_r').value,description:$('#c_desc').value}});
+  const e=$('#cres');e.style.display='block';e.innerHTML=sheetAnalysis(d.analysis)}catch(x){toast(x.message)}
+}
+
+async function imp(){
+  const s=await api('/sources');
+  app.innerHTML=`<h1>Import d'annonces</h1><div class="card"><p class="small mute">Collez des annonces (une par ligne) : <code>titre;prix;statut;url;lieu;état;avis_vendeur;description</code> — séparateur « ; » ou tabulation. Statut : vide (en ligne), <code>achat en cours</code> ou <code>vendu</code>. Seuls titre et prix sont obligatoires. Un même lien ré-importé met à jour le prix/statut.</p>
+   <textarea id="imp" rows="8" placeholder="PC portable Lenovo ThinkPad X395;125;achat en cours;https://www.leboncoin.fr/ad/...;Bois de Grâce 77420;bon;154"></textarea><br><br>
+   <button class="btn pri" onclick="doImp()">Importer</button></div>
+   <h2>Sources</h2><div class="card"><table><tr><th>Source</th><th>Annonces</th><th>Dernière MAJ</th></tr>${s.map(x=>`<tr><td>${esc(x.source)}</td><td>${x.n}</td><td>${new Date(x.last*1000).toLocaleString('fr-FR')}</td></tr>`).join('')}
+   <tr><td>leboncoin (automatique)</td><td colspan="2" class="mute">non configuré — voir README › Sources</td></tr></table></div>`;
+}
+async function doImp(){const r=await api('/import',{m:'POST',b:{text:$('#imp').value}});toast(`${r.parsed} lignes : ${r.new} nouvelles, ${r.updated} MAJ, ${r.unrecognized} modèle(s) non reconnu(s)`);$('#imp').value=''}
+
+async function reglages(){
+  const s=await api('/settings');
+  app.innerHTML=`<h1>Réglages</h1><div class="card"><div class="form">
+   <div><label>Mode d'achat</label><select id="s_buy_mode"><option value="delivery" ${s.buy_mode==='delivery'?'selected':''}>Livraison</option><option value="hand" ${s.buy_mode==='hand'?'selected':''}>Main propre</option></select></div>
+   ${[['travel_cost','Coût déplacement (€)'],['min_margin','Marge nette min. (€)'],['target_roi','ROI cible (0.2 = 20 %)'],['w_speed','Poids vitesse de vente (0–1)'],['w_conf','Poids confiance données (0–1)']].map(([k,l])=>`<div><label>${l}</label><input id="s_${k}" type="number" step="0.05" value="${s[k]}"></div>`).join('')}</div>
+   <p class="small mute">Score = 100 × facteur marge × (base + poids vitesse × vitesse + poids confiance × confiance) × (1 − risque). Base = 1 − poids vitesse − poids confiance.</p>
+   <button class="btn pri" onclick="saveS()">Enregistrer</button></div>`;
+}
+async function saveS(){const b={};['buy_mode','travel_cost','min_margin','target_roi','w_speed','w_conf'].forEach(k=>b[k]=$('#s_'+k).value);await api('/settings',{m:'POST',b});toast('Enregistré')}
+
+$('#scan').onclick=async()=>{const b=$('#scan');b.textContent='…';try{const r=await api('/scan',{m:'POST',b:{}});const d=r[0];toast(`Scan démo : ${d.new} nouvelles, ${d.updated} MAJ de statut`);route()}catch(e){toast(e.message)}b.textContent='↻ Scanner'};
+addEventListener('hashchange',route);route();
+</script>
+</body>
+</html>

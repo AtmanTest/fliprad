@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+fliprad.db
+*.db
+.DS_Store
