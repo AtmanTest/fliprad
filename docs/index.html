@@ -76,6 +76,7 @@ const sc=s=>s>=60?'ok':s>=35?'warn':'bad';
 const CONF={haute:'ok',moyenne:'warn',basse:'bad'};
 let niches=[];
 
+function go(p){location.hash='#'+p}
 function nav(){const h=location.hash||'#/';$('#nav').innerHTML=NAV.map(([a,l])=>`<a href="${a}" class="${h===a||(a==='#/'&&h.startsWith('#/niche'))?'on':''}">${l}</a>`).join('')}
 
 async function route(){
@@ -94,7 +95,7 @@ async function home(){
   niches=await api('/niches');
   const on=niches.filter(n=>n.enabled), off=niches.filter(n=>!n.enabled);
   const empty=on.every(n=>!n.active&&!n.sold30);
-  app.innerHTML=(empty?`<div class="card" style="border-color:var(--acc);margin-bottom:14px"><b>Aucune annonce pour l'instant.</b><div class="small mute" style="margin:4px 0 10px">L'app ne contient aucune donnée fictive. Elle se remplit via les collectes automatiques (eBay, BrickLink : voir le README) ou l'import manuel.</div><button class="btn pri" onclick="go('/import')">Importer des annonces</button></div>`:'')+`<h1>Niches actives</h1><div class="grid">${on.map(n=>`
+  app.innerHTML=(empty?`<div class="card" style="border-color:var(--acc);margin-bottom:14px"><b>Aucune annonce pour l'instant.</b><div class="small mute" style="margin:4px 0 10px">L'app ne contient aucune donnée fictive. Elle se remplit via les collectes automatiques (eBay, BrickLink : voir le README) ou l'import manuel.</div><div id="collect" class="small" style="margin-bottom:10px"></div><button class="btn pri" onclick="go('/import')">Importer des annonces</button></div>`:'')+`<h1>Niches actives</h1><div class="grid">${on.map(n=>`
     <div class="card click" onclick="location.hash='#/niche/${n.slug}'">
       <div style="display:flex;justify-content:space-between;align-items:center"><b>${ICON[n.slug]||''} ${esc(n.name)}</b><span class="pill">${esc(n.category)}</span></div>
       <div class="small mute" style="margin:6px 0 10px">${esc(n.note)}</div>
@@ -106,8 +107,15 @@ async function home(){
   <h2>Niches à risque (désactivées)</h2>
   <div class="grid">${off.map(n=>`<div class="card" style="opacity:.75"><b>${esc(n.name)}</b> <span class="pill">${esc(n.category)}</span>
     <div class="small mute" style="margin:6px 0">${esc(n.note)}</div><span class="pill bad">Sûreté ${n.safety}</span></div>`).join('')}</div>`;
+  collectStatus();
 }
-
+async function collectStatus(){
+  const el=$('#collect'); if(!el)return;
+  const get=u=>fetch(u,{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null);
+  const [e,b]=await Promise.all([get('data/ebay.json'),get('data/bricklink.json')]);
+  const ne=Array.isArray(e)?e.length:0, nb=b?Object.keys(b).length:0;
+  el.innerHTML=`<div>eBay.fr : <b>${ne}</b> annonces collectées ${ne?'<span class="pill ok">actif</span>':'<span class="pill warn">en attente des clés eBay</span>'}</div><div>BrickLink (prix vendus LEGO) : <b>${nb}</b> sets ${nb?'<span class="pill ok">actif</span>':'<span class="pill warn">en attente des clés BrickLink</span>'}</div>`;
+}
 async function niche(slug,tab){
   if(!niches.length)niches=await api('/niches');
   const n=niches.find(x=>x.slug===slug);if(!n){app.innerHTML='Niche inconnue';return}
