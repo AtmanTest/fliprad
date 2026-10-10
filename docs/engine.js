@@ -286,6 +286,10 @@ async function api(path, o) {
   throw new Error('route inconnue');
 }
 load();
-window.FlipAPI = api;
+// Données collectées par le cron GitHub Actions (alertes e-mail) : docs/data/listings.json
+const ready = fetch('data/listings.json', {cache:'no-store'}).then(r => r.ok ? r.json() : []).then(items => {
+  let n = 0; for (const d of items) if (d && d.ext_id && d.title && d.price > 0) { if (upsert(d) === 'new') n++; } if (n) save(); }).catch(() => {});
+const apiReady = async (p, o) => { await ready; return api(p, o); };
+window.FlipAPI = apiReady;
 window.FlipEngine = {matchProduct, detectCondition, detectRisks, analyze, context, upsert, parseImport, norm};
 })();

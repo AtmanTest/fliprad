@@ -19,3 +19,11 @@ Revente = médiane des ventes observées du modèle (120 j, normalisées par ét
 
 ## Limites
 Données propres à chaque navigateur (pas de synchro), pas de distance/géoloc, pas d'alertes (il faudrait un back-end), pas de tests automatisés sur la version JS.
+
+## Collecte automatique (cron GitHub Actions, aucun serveur ni machine locale)
+`.github/workflows/email-alerts.yml` tourne toutes les 30 min : `scripts/fetch_email_alerts.py` lit vos **alertes e-mail de recherches sauvegardées Leboncoin** (IMAP) et écrit `docs/data/listings.json`, que le site charge au démarrage. Aucune requête vers Leboncoin.
+1. Sur Leboncoin, créez des recherches sauvegardées avec alerte e-mail (par modèle : « thinkpad x395 », « lego 75192 »…).
+2. Créez un mot de passe d'application pour votre boîte mail (Gmail : compte Google › Sécurité › Mots de passe d'application).
+3. Dépôt › Settings › Secrets and variables › Actions : `IMAP_USER`, `IMAP_PASSWORD` (et `IMAP_HOST` si pas Gmail).
+4. Actions › « Alertes e-mail Leboncoin » › Run workflow.
+Limite : un e-mail d'alerte n'indique pas « Achat en cours » / « Vendu » : pour ce signal, utilisez le favori de capture (page Import). Parseur non validé sur de vrais e-mails Leboncoin : envoyez-moi un e-mail d'alerte (sans infos perso) pour l'ajuster.
