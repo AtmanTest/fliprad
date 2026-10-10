@@ -204,13 +204,46 @@ async function doCalc(){
   const e=$('#cres');e.style.display='block';e.innerHTML=sheetAnalysis(d.analysis)}catch(x){toast(x.message)}
 }
 
+
+/* Bookmarklet : lit la page Leboncoin DÉJÀ affichée dans votre navigateur (aucune requête envoyée) */
+function bmMain(){
+  var out=[],seen={};
+  var cards=[].slice.call(document.querySelectorAll('[data-qa-id="aditem_container"]'));
+  if(!cards.length){cards=[].slice.call(document.querySelectorAll('a[href*="/ad/"]')).map(function(a){var c=a.closest('article,li,div[class*="ad"],div')||a;return c;});}
+  cards.forEach(function(c){
+    var a=c.matches&&c.matches('a[href*="/ad/"]')?c:c.querySelector('a[href*="/ad/"]'); if(!a)return;
+    var url=a.href.split('?')[0]; if(seen[url])return; seen[url]=1;
+    var q=function(sel){var e=c.querySelector(sel);return e?e.textContent.trim():''};
+    var txt=(c.innerText||'').replace(/\s+/g,' ');
+    var title=q('[data-qa-id="aditem_title"]')||(a.getAttribute('title')||a.textContent||'').trim();
+    var pm=(q('[data-qa-id="aditem_price"]')||txt).match(/(\d[\d\s  ]*(?:[.,]\d+)?)\s*€/);
+    if(!title||!pm)return;
+    var price=pm[1].replace(/[\s  ]/g,'').replace(',','.');
+    var st=/vendu/i.test(txt)?'vendu':/achat en cours/i.test(txt)?'achat en cours':'';
+    var loc=q('[data-qa-id="aditem_location"]');
+    var rv=txt.match(/\((\d+)\)/);
+    out.push([title.replace(/;/g,','),price,st,url,loc.replace(/;/g,','),'',rv?rv[1]:'',''].join(';'));
+  });
+  var text=out.join('\n');
+  var box=document.createElement('div');
+  box.style.cssText='position:fixed;z-index:2147483647;inset:5% 10%;background:#fff;color:#111;border:3px solid #e8590c;border-radius:12px;padding:14px;font:14px sans-serif;display:flex;flex-direction:column;gap:8px;box-shadow:0 10px 40px rgba(0,0,0,.4)';
+  var h=document.createElement('b');h.textContent='FlipRadar : '+out.length+' annonce(s) capturée(s)'+(out.length?'':' — aucune reconnue, la page a peut-être changé');
+  var ta=document.createElement('textarea');ta.value=text;ta.style.cssText='flex:1;font:12px monospace;padding:8px';
+  var row=document.createElement('div');row.style.cssText='display:flex;gap:8px';
+  var cp=document.createElement('button');cp.textContent='Copier';cp.style.cssText='padding:8px 14px;font-weight:700';
+  cp.onclick=function(){ta.select();var ok=false;try{ok=document.execCommand('copy')}catch(e){}try{navigator.clipboard&&navigator.clipboard.writeText(text);ok=true}catch(e){}cp.textContent=ok?'Copié ✔ — collez dans FlipRadar › Import':'Sélectionné : Cmd/Ctrl+C'};
+  var cl=document.createElement('button');cl.textContent='Fermer';cl.style.cssText='padding:8px 14px';cl.onclick=function(){box.remove()};
+  row.appendChild(cp);row.appendChild(cl);box.appendChild(h);box.appendChild(ta);box.appendChild(row);document.body.appendChild(box);
+}
 async function imp(){
   const s=await api('/sources');
   app.innerHTML=`<h1>Import d'annonces</h1><div class="card"><p class="small mute">Collez des annonces (une par ligne) : <code>titre;prix;statut;url;lieu;état;avis_vendeur;description</code> — séparateur « ; » ou tabulation. Statut : vide (en ligne), <code>achat en cours</code> ou <code>vendu</code>. Seuls titre et prix sont obligatoires. Un même lien ré-importé met à jour le prix/statut. Aucune annonce n'est collectée automatiquement.</p>
    <textarea id="imp" rows="8" placeholder="PC portable Lenovo ThinkPad X395;125;achat en cours;https://www.leboncoin.fr/ad/...;Bois de Grâce 77420;bon;154"></textarea><br><br>
    <button class="btn pri" onclick="doImp()">Importer</button></div>
+   <h2>Capturer depuis Leboncoin (sans installation)</h2><div class="card"><ol class="small" style="margin:0 0 10px;padding-left:18px"><li>Glissez ce bouton dans votre barre de favoris : <a id="bm" class="btn pri sm" href="#" onclick="return false" style="text-decoration:none">◎ Capturer FlipRadar</a></li><li>Ouvrez vous-même une recherche Leboncoin (ex. « thinkpad x395 », tri par date), faites défiler pour charger les annonces.</li><li>Cliquez le favori : une fenêtre liste les annonces de la page avec leur badge « Achat en cours » / « Vendu ». Cliquez « Copier ».</li><li>Revenez ici, collez dans la zone ci-dessus, « Importer ».</li></ol><p class="small mute">Le favori lit uniquement la page déjà affichée dans votre navigateur ; il n'envoie aucune requête et ne contacte aucun serveur. Non testé sur toutes les pages : si « 0 annonce » s'affiche, dites-le-moi avec l'URL de la recherche.</p></div>
    <h2>Sources</h2><div class="card"><table><tr><th>Source</th><th>Annonces</th><th>Dernière MAJ</th></tr>${s.map(x=>`<tr><td>${esc(x.source)}</td><td>${x.n}</td><td>${new Date(x.last*1000).toLocaleString('fr-FR')}</td></tr>`).join('')}
-   <tr><td>leboncoin (automatique)</td><td colspan="2" class="mute">non configuré — voir README › Sources</td></tr></table></div>`;
+   <tr><td>leboncoin (automatique)</td><td colspan="2" class="mute">aucune collecte automatique — utilisez le favori ci-dessus</td></tr></table></div>`;
+  $('#bm').setAttribute('href','javascript:('+encodeURIComponent(bmMain.toString())+')()');
 }
 async function doImp(){const r=await api('/import',{m:'POST',b:{text:$('#imp').value}});toast(`${r.parsed} lignes : ${r.new} nouvelles, ${r.updated} MAJ, ${r.unrecognized} modèle(s) non reconnu(s)`);$('#imp').value=''}
 
