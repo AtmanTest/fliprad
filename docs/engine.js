@@ -56,7 +56,7 @@ const pct = (a,q) => { if(!a.length) return null; const s=[...a].sort((x,y)=>x-y
 const norm = s => (s||'').normalize('NFKD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 
 // ---------- état + persistance ----------
-let S;
+let S, MARKET = {};
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e) {} };
 function load() {
   try { const j = localStorage.getItem(KEY); if (j) { S = JSON.parse(j); return; } } catch(e) {}
@@ -120,6 +120,9 @@ function stats(ctx, key) {
 function valuation(ctx, key, cond) {
   const st = stats(ctx,key), f = COND_FACTOR[cond]||.88, newp = PBY[key].newp;
   if (st.n >= 3) return {mid:st.median*f, low:st.p25*f, high:st.p75*f, basis:'observé', label:`${st.n} ventes observées (badges Vendu / Achat en cours), 120 j`, n:st.n, confidence:st.confidence};
+  const x = MARKET[key];
+  if (x && x.n >= 3) { const g = f/COND_FACTOR.neuf;
+    return {mid:x.avg*g, low:(x.p25||x.avg*.9)*g, high:(x.p75||x.avg*1.1)*g, basis:'observé', label:`${x.n} ventes — ${x.source} (moyenne pondérée)`, n:x.n, confidence:x.n>=30?'haute':x.n>=10?'moyenne':'basse'}; }
   if (st.active_n >= 3) { const m = st.active_median*.9*f; return {mid:m, low:m*.9, high:m*1.1, basis:'estimé', label:`Estimé : médiane des ${st.active_n} annonces actives −10 % (aucune vente observée)`, n:0, confidence:'basse'}; }
   if (newp) { const m = newp*.6*f; return {mid:m, low:m*.85, high:m*1.15, basis:'estimé', label:'Estimé : 60 % du prix neuf indicatif (très peu de données)', n:0, confidence:'basse'}; }
   return null;
@@ -191,7 +194,7 @@ function safetyMeasured(ctx, slug) {
 }
 
 // ---------- ingestion ----------
-const STATUS = {'':'active', active:'active', 'en ligne':'active', 'achat en cours':'achat_en_cours', achat_en_cours:'achat_en_cours', vendu:'vendu', sold:'vendu'};
+const STATUS = {'':'active', active:'active', 'en ligne':'active', 'achat en cours':'achat_en_cours', achat_en_cours:'achat_en_cours', vendu:'vendu', sold:'vendu', disparue:'disparue'};
 function upsert(d) {
   const t = now(), text = `${d.title} ${d.description||''}`, key = d.product_key || matchProduct(text), niche = key ? PBY[key].niche : null;
   const cond = d.condition || (niche ? detectCondition(text, niche) : 'bon');
@@ -201,11 +204,11 @@ function upsert(d) {
     S.listings.push({id:S.nextId++, source:d.source, ext_id:d.ext_id, url:d.url||'', title:d.title, description:d.description||'', price:d.price, status,
       location:d.location||'', condition:cond, product_key:key, niche, seller_rating:d.seller_rating??null, seller_reviews:d.seller_reviews??null,
       delivery_fee:d.delivery_fee??null, buyer_fee:d.buyer_fee||0, first_seen:d.first_seen||t, last_seen:t,
-      sold_at: d.sold_at || (status!=='active' ? t : null), ignored:0});
+      sold_at: d.sold_at || (SOLD.includes(status) ? t : null), ignored:0});
     return 'new';
   }
   const changed = row.price !== d.price || row.status !== status;
-  row.price = d.price; row.status = status; row.last_seen = t; row.sold_at = row.sold_at || (status!=='active' ? t : null);
+  row.price = d.price; row.status = status; row.last_seen = t; row.sold_at = row.sold_at || (SOLD.includes(status) ? t : null);
   if (key) { row.product_key = key; row.niche = niche; }
   return changed ? 'updated' : 'unchanged';
 }
@@ -286,9 +289,12 @@ async function api(path, o) {
   throw new Error('route inconnue');
 }
 load();
-// Données collectées par le cron GitHub Actions (alertes e-mail) : docs/data/listings.json
-const ready = fetch('data/listings.json', {cache:'no-store'}).then(r => r.ok ? r.json() : []).then(items => {
-  let n = 0; for (const d of items) if (d && d.ext_id && d.title && d.price > 0) { if (upsert(d) === 'new') n++; } if (n) save(); }).catch(() => {});
+// Données collectées par les crons GitHub Actions : docs/data/ebay.json (annonces) et bricklink.json (prix vendus LEGO)
+const getJSON = u => fetch(u, {cache:'no-store'}).then(r => r.ok ? r.json() : null).catch(() => null);
+const ready = Promise.all([getJSON('data/ebay.json'), getJSON('data/bricklink.json')]).then(([items, market]) => {
+  if (market && typeof market === 'object') MARKET = market;
+  let n = 0; for (const d of (Array.isArray(items) ? items : [])) if (d && d.ext_id && d.title && d.price > 0) { if (upsert(d) === 'new') n++; }
+  if (n) save(); });
 const apiReady = async (p, o) => { await ready; return api(p, o); };
 window.FlipAPI = apiReady;
 window.FlipEngine = {matchProduct, detectCondition, detectRisks, analyze, context, upsert, parseImport, norm};

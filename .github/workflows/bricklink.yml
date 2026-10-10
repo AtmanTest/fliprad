@@ -1,0 +1,23 @@
+name: Collecte bricklink
+on:
+  schedule: [{cron: "17 5 * * *"}]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: collecte-data
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 scripts/fetch_bricklink.py
+        env:
+          BRICKLINK_CONSUMER_KEY: ${{ secrets.BRICKLINK_CONSUMER_KEY }}
+          BRICKLINK_CONSUMER_SECRET: ${{ secrets.BRICKLINK_CONSUMER_SECRET }}
+          BRICKLINK_TOKEN: ${{ secrets.BRICKLINK_TOKEN }}
+          BRICKLINK_TOKEN_SECRET: ${{ secrets.BRICKLINK_TOKEN_SECRET }}
+      - name: Commit des données
+        run: |
+          git config user.name flipradar-bot; git config user.email bot@users.noreply.github.com
+          git add docs/data/bricklink.json
+          git diff --cached --quiet || (git commit -m "Mise à jour bricklink" && git pull --rebase -q && git push)

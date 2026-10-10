@@ -20,10 +20,17 @@ Revente = médiane des ventes observées du modèle (120 j, normalisées par ét
 ## Limites
 Données propres à chaque navigateur (pas de synchro), pas de distance/géoloc, pas d'alertes (il faudrait un back-end), pas de tests automatisés sur la version JS.
 
-## Collecte automatique (cron GitHub Actions, aucun serveur ni machine locale)
-`.github/workflows/email-alerts.yml` tourne toutes les 30 min : `scripts/fetch_email_alerts.py` lit vos **alertes e-mail de recherches sauvegardées Leboncoin** (IMAP) et écrit `docs/data/listings.json`, que le site charge au démarrage. Aucune requête vers Leboncoin.
-1. Sur Leboncoin, créez des recherches sauvegardées avec alerte e-mail (par modèle : « thinkpad x395 », « lego 75192 »…).
-2. Créez un mot de passe d'application pour votre boîte mail (Gmail : compte Google › Sécurité › Mots de passe d'application).
-3. Dépôt › Settings › Secrets and variables › Actions : `IMAP_USER`, `IMAP_PASSWORD` (et `IMAP_HOST` si pas Gmail).
-4. Actions › « Alertes e-mail Leboncoin » › Run workflow.
-Limite : un e-mail d'alerte n'indique pas « Achat en cours » / « Vendu » : pour ce signal, utilisez le favori de capture (page Import). Parseur non validé sur de vrais e-mails Leboncoin : envoyez-moi un e-mail d'alerte (sans infos perso) pour l'ajuster.
+## Collecte automatique (crons GitHub Actions : aucun serveur, rien en local)
+Deux sources **officielles** (pas de scraping), chacune dans son workflow, qui écrit un JSON dans `docs/data/` relu par le site :
+
+| Workflow | Fréquence | Source | Apporte | Secrets (Settings › Secrets and variables › Actions) |
+|---|---|---|---|---|
+| `ebay.yml` | 30 min | API Browse eBay.fr | annonces actives des 23 modèles du catalogue (achat) | `EBAY_CLIENT_ID`, `EBAY_CLIENT_SECRET` (clés « Production » sur developer.ebay.com, gratuit) |
+| `bricklink.yml` | 1×/jour | API BrickLink, price guide « sold » | prix de **vente** réels des sets LEGO neufs (6 mois, Europe), avec quartiles pondérés | `BRICKLINK_CONSUMER_KEY`, `_CONSUMER_SECRET`, `_TOKEN`, `_TOKEN_SECRET` (consumer enregistré sur bricklink.com, IP autorisée `0.0.0.0`) |
+
+Sans secrets, les workflows se terminent avec un avertissement et ne font rien. Lancement manuel : onglet Actions › Run workflow.
+
+**Limites assumées**
+- eBay : les annonces absentes de 2 collectes passent en « disparue ». Ce n'est **pas** une vente (les ventes conclues eBay via l'API Marketplace Insights sont réservées aux partenaires approuvés).
+- Hors LEGO, la valeur de revente reste « estimée » (médiane des annonces actives −10 %, confiance basse) tant qu'aucune vente réelle n'est observée. Les badges « Achat en cours » / « Vendu » de Leboncoin passent par le favori de capture (page Import).
+- Scripts écrits d'après la documentation des API, non exécutés avec de vraies clés.

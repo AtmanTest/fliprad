@@ -94,7 +94,7 @@ async function home(){
   niches=await api('/niches');
   const on=niches.filter(n=>n.enabled), off=niches.filter(n=>!n.enabled);
   const empty=on.every(n=>!n.active&&!n.sold30);
-  app.innerHTML=(empty?`<div class="card" style="border-color:var(--acc);margin-bottom:14px"><b>Aucune annonce pour l'instant.</b><div class="small mute" style="margin:4px 0 10px">L'app ne contient aucune donnée fictive. Importez de vraies annonces pour voir les classements.</div><button class="btn pri" onclick="go('/import')">Importer des annonces</button></div>`:'')+`<h1>Niches actives</h1><div class="grid">${on.map(n=>`
+  app.innerHTML=(empty?`<div class="card" style="border-color:var(--acc);margin-bottom:14px"><b>Aucune annonce pour l'instant.</b><div class="small mute" style="margin:4px 0 10px">L'app ne contient aucune donnée fictive. Elle se remplit via les collectes automatiques (eBay, BrickLink : voir le README) ou l'import manuel.</div><button class="btn pri" onclick="go('/import')">Importer des annonces</button></div>`:'')+`<h1>Niches actives</h1><div class="grid">${on.map(n=>`
     <div class="card click" onclick="location.hash='#/niche/${n.slug}'">
       <div style="display:flex;justify-content:space-between;align-items:center"><b>${ICON[n.slug]||''} ${esc(n.name)}</b><span class="pill">${esc(n.category)}</span></div>
       <div class="small mute" style="margin:6px 0 10px">${esc(n.note)}</div>
@@ -242,7 +242,7 @@ async function imp(){
    <button class="btn pri" onclick="doImp()">Importer</button></div>
    <h2>Capturer depuis Leboncoin (sans installation)</h2><div class="card"><ol class="small" style="margin:0 0 10px;padding-left:18px"><li>Glissez ce bouton dans votre barre de favoris : <a id="bm" class="btn pri sm" href="#" onclick="return false" style="text-decoration:none">◎ Capturer FlipRadar</a></li><li>Ouvrez vous-même une recherche Leboncoin (ex. « thinkpad x395 », tri par date), faites défiler pour charger les annonces.</li><li>Cliquez le favori : une fenêtre liste les annonces de la page avec leur badge « Achat en cours » / « Vendu ». Cliquez « Copier ».</li><li>Revenez ici, collez dans la zone ci-dessus, « Importer ».</li></ol><p class="small mute">Le favori lit uniquement la page déjà affichée dans votre navigateur ; il n'envoie aucune requête et ne contacte aucun serveur. Non testé sur toutes les pages : si « 0 annonce » s'affiche, dites-le-moi avec l'URL de la recherche.</p></div>
    <h2>Sources</h2><div class="card"><table><tr><th>Source</th><th>Annonces</th><th>Dernière MAJ</th></tr>${s.map(x=>`<tr><td>${esc(x.source)}</td><td>${x.n}</td><td>${new Date(x.last*1000).toLocaleString('fr-FR')}</td></tr>`).join('')}
-   <tr><td>leboncoin (automatique)</td><td colspan="2" class="mute">aucune collecte automatique — utilisez le favori ci-dessus</td></tr></table></div>`;
+   <tr><td>leboncoin</td><td colspan="2" class="mute">aucune collecte automatique — favori de capture ci-dessus</td></tr></table></div>`;
   $('#bm').setAttribute('href','javascript:('+encodeURIComponent(bmMain.toString())+')()');
 }
 async function doImp(){const r=await api('/import',{m:'POST',b:{text:$('#imp').value}});toast(`${r.parsed} lignes : ${r.new} nouvelles, ${r.updated} MAJ, ${r.unrecognized} modèle(s) non reconnu(s)`);$('#imp').value=''}

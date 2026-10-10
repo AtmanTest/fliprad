@@ -1,0 +1,140 @@
+[
+ {
+  "key": "lego-75192",
+  "niche": "lego",
+  "name": "LEGO Star Wars 75192 Faucon Millenium UCS",
+  "q": "lego 75192"
+ },
+ {
+  "key": "lego-75313",
+  "niche": "lego",
+  "name": "LEGO Star Wars 75313 AT-AT UCS",
+  "q": "lego 75313"
+ },
+ {
+  "key": "lego-10276",
+  "niche": "lego",
+  "name": "LEGO Icons 10276 Colisée",
+  "q": "lego 10276"
+ },
+ {
+  "key": "lego-21322",
+  "niche": "lego",
+  "name": "LEGO Ideas 21322 Barracuda Bay",
+  "q": "lego 21322"
+ },
+ {
+  "key": "lego-10281",
+  "niche": "lego",
+  "name": "LEGO Icons 10281 Bonsaï",
+  "q": "lego 10281"
+ },
+ {
+  "key": "lego-42115",
+  "niche": "lego",
+  "name": "LEGO Technic 42115 Lamborghini Sián",
+  "q": "lego 42115"
+ },
+ {
+  "key": "lego-10305",
+  "niche": "lego",
+  "name": "LEGO Icons 10305 Château des Chevaliers du Lion",
+  "q": "lego 10305"
+ },
+ {
+  "key": "lego-76240",
+  "niche": "lego",
+  "name": "LEGO Batman 76240 Batmobile Tumbler",
+  "q": "lego 76240"
+ },
+ {
+  "key": "makita-dhp484",
+  "niche": "outils",
+  "name": "Makita DHP484 perceuse-visseuse 18V",
+  "q": "makita DHP484"
+ },
+ {
+  "key": "makita-dtw1002",
+  "niche": "outils",
+  "name": "Makita DTW1002 boulonneuse 1/2\" 18V",
+  "q": "makita DTW1002"
+ },
+ {
+  "key": "dewalt-dcd796",
+  "niche": "outils",
+  "name": "DeWalt DCD796 perceuse-visseuse 18V",
+  "q": "dewalt DCD796"
+ },
+ {
+  "key": "dewalt-dcf887",
+  "niche": "outils",
+  "name": "DeWalt DCF887 visseuse à chocs 18V",
+  "q": "dewalt DCF887"
+ },
+ {
+  "key": "milwaukee-fpd3",
+  "niche": "outils",
+  "name": "Milwaukee M18 FPD3 perceuse à percussion",
+  "q": "milwaukee M18 FPD"
+ },
+ {
+  "key": "milwaukee-fid3",
+  "niche": "outils",
+  "name": "Milwaukee M18 FID3 visseuse à chocs",
+  "q": "milwaukee M18 FID"
+ },
+ {
+  "key": "bosch-gsr1855",
+  "niche": "outils",
+  "name": "Bosch Professional GSR 18V-55",
+  "q": "bosch GSR 18V-55"
+ },
+ {
+  "key": "bosch-gbh1826",
+  "niche": "outils",
+  "name": "Bosch Professional GBH 18V-26 perforateur",
+  "q": "bosch GBH 18V-26"
+ },
+ {
+  "key": "tp-x395",
+  "niche": "pc-pro",
+  "name": "Lenovo ThinkPad X395",
+  "q": "thinkpad x395"
+ },
+ {
+  "key": "tp-t480",
+  "niche": "pc-pro",
+  "name": "Lenovo ThinkPad T480",
+  "q": "thinkpad t480"
+ },
+ {
+  "key": "tp-t14g2",
+  "niche": "pc-pro",
+  "name": "Lenovo ThinkPad T14 Gen 2",
+  "q": "thinkpad t14 gen 2"
+ },
+ {
+  "key": "tp-x1c7",
+  "niche": "pc-pro",
+  "name": "Lenovo ThinkPad X1 Carbon Gen 7",
+  "q": "thinkpad x1 carbon gen 7"
+ },
+ {
+  "key": "dell-5420",
+  "niche": "pc-pro",
+  "name": "Dell Latitude 5420",
+  "q": "dell latitude 5420"
+ },
+ {
+  "key": "dell-7420",
+  "niche": "pc-pro",
+  "name": "Dell Latitude 7420",
+  "q": "dell latitude 7420"
+ },
+ {
+  "key": "hp-840g7",
+  "niche": "pc-pro",
+  "name": "HP EliteBook 840 G7",
+  "q": "hp elitebook 840 g7"
+ }
+]

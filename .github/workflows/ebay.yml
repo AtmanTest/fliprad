@@ -1,0 +1,21 @@
+name: Collecte ebay
+on:
+  schedule: [{cron: "*/30 * * * *"}]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: collecte-data
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 scripts/fetch_ebay.py
+        env:
+          EBAY_CLIENT_ID: ${{ secrets.EBAY_CLIENT_ID }}
+          EBAY_CLIENT_SECRET: ${{ secrets.EBAY_CLIENT_SECRET }}
+      - name: Commit des données
+        run: |
+          git config user.name flipradar-bot; git config user.email bot@users.noreply.github.com
+          git add docs/data/ebay.json
+          git diff --cached --quiet || (git commit -m "Mise à jour ebay" && git pull --rebase -q && git push)
