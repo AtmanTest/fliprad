@@ -16,41 +16,44 @@ DAYS = int(os.environ.get("ALERT_DAYS", "14"))
 
 
 class Links(HTMLParser):
-    """Collecte les liens d'annonces avec le texte qui les entoure."""
+    """Liste ordonnée des textes + positions des liens d'annonces."""
     def __init__(self):
-        super().__init__(); self.items, self._href, self._buf, self._ctx = [], None, [], []
+        super().__init__(); self.tokens, self.anchors, self._href, self._start = [], [], None, 0
 
     def handle_starttag(self, tag, attrs):
         if tag == "a":
             h = dict(attrs).get("href", "")
-            if re.search(r"leboncoin\.fr/(?:ad/)?[\w\-/]*?/?\d{8,}", h) or "/ad/" in h:
-                self._href, self._buf = h, []
+            if re.search(r"\d{7,}", h) and ("leboncoin" in h or "/ad/" in h):
+                self._href, self._start = h, len(self.tokens)
 
     def handle_data(self, data):
         t = data.strip()
-        if not t:
-            return
-        self._ctx.append(t); self._ctx = self._ctx[-8:]
-        if self._href is not None:
-            self._buf.append(t)
+        if t:
+            self.tokens.append(t)
 
     def handle_endtag(self, tag):
         if tag == "a" and self._href is not None:
-            self.items.append((self._href, " ".join(self._buf), list(self._ctx)))
+            self.anchors.append((self._href, self._start, len(self.tokens)))
             self._href = None
+
+
+PRICE = re.compile(r"(\d[\d\s\u202f\u00a0]*(?:[.,]\d+)?)\s*€")
 
 
 def parse_html(html, when):
     p = Links(); p.feed(html); out = []
-    for href, text, ctx in p.items:
+    for k, (href, s, e) in enumerate(p.anchors):
         m = re.search(r"(\d{7,})", href)
-        zone = " ".join(ctx + [text])
-        pm = re.search(r"(\d[\d\s  ]*(?:[.,]\d+)?)\s*€", zone)
-        title = re.sub(r"\s*\d[\d\s  ]*(?:[.,]\d+)?\s*€.*$", "", text).strip() or next((c for c in ctx if len(c) > 12 and "€" not in c), "")
+        nxt = p.anchors[k + 1][1] if k + 1 < len(p.anchors) else len(p.tokens)
+        own = [t for t in p.tokens[s:e]]
+        pm = next((PRICE.search(t) for t in own + p.tokens[e:min(e + 6, nxt if nxt > e else e + 6)] if PRICE.search(t)), None)
+        title = next((t for t in own if len(t) > 8 and not PRICE.fullmatch(t.strip())), "") or \
+            next((t for t in p.tokens[max(0, s - 3):s] if len(t) > 12 and "€" not in t), "")
+        title = PRICE.sub("", title).strip(" -–")
         if not (m and pm and title):
             continue
         out.append({"source": "email-alerte", "ext_id": m.group(1), "url": href.split("?")[0], "title": title[:200],
-                    "price": float(re.sub(r"[\s  ]", "", pm.group(1)).replace(",", ".")), "status": "",
+                    "price": float(re.sub(r"[\s\u202f\u00a0]", "", pm.group(1)).replace(",", ".")), "status": "",
                     "first_seen": int(when.timestamp())})
     return out
 
