@@ -9,8 +9,7 @@ Aide à l'achat-revente : Top 10 Achats et Top 10 Ventes par niche (LEGO neuf sc
 |---|---|
 | Moteur (normalisation, valorisation, marge, risques, score), UI, suivi, import manuel, calculateur | Réel |
 | Capture des badges « Achat en cours » / « Vendu » | Réel (via import) |
-| Annonces au premier chargement | **DÉMO synthétique** (bandeau dans l'UI) |
-| Bouton « Scanner » | Simule de nouvelles annonces/statuts |
+| Données | **Aucune donnée fictive** : la base démarre vide, seules les annonces importées existent |
 | Source Leboncoin automatique | Non branchée (pas d'API publique, scraping contraire aux CGU et protégé par anti-bot : non contourné) |
 
 Pour de vraies données : onglet **Import** (`titre;prix;statut;url;lieu;état;avis;description`).
